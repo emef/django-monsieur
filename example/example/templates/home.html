@@ -1,0 +1,12 @@
+<html doctype="html">
+  <head>
+    <script>
+      var data = [{% for dp in data %}
+      {dt: new Date('{{dp.dt}}'), count: {{dp.count}}} {% if not forloop.last %}, {% endif %}
+      {% endfor %}];
+    </script>
+  </head>
+  <body>
+
+  </body>
+</html>
