@@ -1,18 +1,23 @@
-import datetime
+import datetime, itertools
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils.timezone import now
-from monsieur.models import DataPoint, DataAttribute
+from collections import defaultdict
+from monsieur.models import DataPoint, DataAttribute, Tag
 
 @transaction.commit_on_success
-def incr(name, amt, *args, **kwargs):
+def incr(name, amt, tag_names, *args, **kwargs):
     attrs = get_attrs(*args, **kwargs)
 
     data_attrs = []
     for key, val in attrs.items():
-        pk = DataAttribute.make(key, val)
-        attr, created = DataAttribute.objects.get_or_create(key=pk)
+        id = DataAttribute.make(key, val)
+        attr, created = DataAttribute.objects.get_or_create(key=key, value=val, id=id)
         data_attrs.append(attr)
+
+    tags = []
+    for name in tag_names:
+        tags.append(Tag.objects.get_or_create(name=name))
 
     dp = DataPoint.objects.create(
         name=name,
@@ -21,27 +26,106 @@ def incr(name, amt, *args, **kwargs):
     )
 
     dp.attributes.add(*data_attrs)
+
+    if tags:
+        dp.tags.add(*tags)
+
     dp.save()
 
-@transaction.commit_on_success
-class q(object):
-    def __init__(self, name, *args, **kwargs):
-        self.name = name
-        self.qs = DataPoint.objects.filter(name=name)
+class Q(object):
+    @classmethod
+    def tag(cls, tag):
+        qs = DataPoint.objects.filter(tags__name=tag)
+        return Q(qs)
 
+    @classmethod
+    def points(cls, names):
+        names = names if isinstance(names, list) else [names, ]
+        qs = DataPoint.objects.filter(name__in=names)
+        return Q(qs)
+
+    def __init__(self, qs):
+        self.qs = qs
+        self.cached_results = None
+        self._granularity = None
+
+    def filter(self, *args, **kwargs):
+        self.cached_results = None
         attrs = get_attrs(*args, **kwargs)
         pks = [DataAttribute.make(key, val) for key, val in attrs.items()]
-        if len(pks) > 0:
-            data_attrs = DataAttribute.objects.filter(pk__in=pks)
-            self.qs = self.qs.filter(attributes__in=data_attrs)
+        for key, val in attrs.items():
+            if val == '*':
+                self.qs = self.qs.filter(attributes__key=key)
+                q_or = Q(key=key)
+            else:
+                val = val.replace('\\*', '*')
+                self.qs = self.qs.filter(attributes__pk=DataAttribute.make(key, val))
 
-    def get(self, start=None, end=None):
-        if start is not None:
-            self.qs = self.qs.filter(dt__gte=start)
-        if end is not None:
-            self.qs = self.qs.filter(dt__lte=end)
+        return self
 
-        return list(self.qs.values('dt').annotate(count=Sum('count')))
+    def start(self, start):
+        self.cached_results = None
+        self.qs = self.qs.filter(dt__gte=start)
+        return self
+
+    def end(self, end):
+        self.cached_results = None
+        self.qs = self.qs.filter(dt__lte=end)
+        return self
+
+    def granularity(self, granularity):
+        self.cached_results = None
+        self._granularity = granularity
+        return self
+
+    def names(self):
+        return [x['name'] for x in self.qs.values('name').annotate()]
+
+    def eval(self):
+        if not self.cached_results:
+            raw_data = list(self.qs.values('name', 'dt').annotate(count=Sum('count')))
+            data = defaultdict(lambda: [])
+            for row in raw_data:
+                data[row['name']].append({'dt': row['dt'], 'count': row['count']})
+
+            for name in data.keys():
+                data[name] = grouped(data[name], self._granularity)
+
+            self.cached_results = data
+
+        return self.cached_results
+
+def all(start=None, end=None):
+    qs = DataPoint.objects.all()
+    if start is not None:
+        qs = qs.filter(dt__gte=start)
+    if end is not None:
+        qs = qs.filter(dt__lte=end)
+
+    pts = list(qs.values('dt', 'name').annotate(count=Sum('count')))
+    data = defaultdict(lambda: [])
+    for pt in pts:
+        data[pt['name']].append({'dt': pt['dt'], 'count': pt['count']})
+
+    return data
+
+def grouped(data, granularity):
+    rplc_args = {}
+    if granularity in ['hour', 'day']:
+        rplc_args.update({'minute': 0, 'second': 0, 'microsecond': 0})
+    if granularity == 'day':
+        rplc_args['hour'] = 0
+
+    if len(rplc_args):
+        grfn = lambda x: x['dt'].replace(**rplc_args)
+        newdata = []
+        for dt, pts in itertools.groupby(data, grfn):
+            newdata.append({'dt': dt, 'count': sum(p['count'] for p in pts)})
+
+        data = newdata
+
+    return data
+
 
 
 ##################################################
