@@ -35,3 +35,28 @@ monsieur has a query system similar to Django's querysets.
 >>> q.eval()
 {'integer division or modulo by zero': [{'dt': datetime.datetime(2013, 1, 7, 20, 46, 0, 0), 'count': 1}, ...]}
 ```
+
+### Q constructors
+```python
+Q.tag(x)        # x = TAG | [TAG1, TAG2, ...]
+
+Q.events(x)     # x = NAME | [NAME1, NAME2, ...]
+```
+
+### Q methods
+```python
+q.filter(**kwargs)   # key=value to filter by
+
+q.start(x)           # x = datetime.datetime
+
+q.end(x)             # x = datetime.datetime
+
+q.granularity(x)     # x = 'minute' | 'hour' | 'day'
+```
+
+### Q evaluation methods
+```python
+q.names()
+
+q.eval()
+```
