@@ -7,8 +7,9 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns('example.views',
     url(r'^$', 'home', name='home'),
-    url(r'^json/(?P<granularity>[^/]+)/(?P<tag>[^/]+)/?$', 'json'),
-    url(r'^json/(?P<tag>[^/]+)/?$', 'json'),
+    url(r'^json/(?P<granularity>[^/]+)/(?P<name>[^/]+)/?$', 'json'),
+    url(r'^names/(?P<tag>[^/]+)/?$', 'names'),
+    url(r'^attrs/(?P<name>[^/]+)/?$', 'attrs'),
 )
 
 urlpatterns += staticfiles_urlpatterns()

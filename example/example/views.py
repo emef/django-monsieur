@@ -7,11 +7,19 @@ from django.http import HttpResponse
 def home(request):
     return render(request, 'home.html')
 
-def json(request, tag=None, granularity='minute'):
+def json(request, name=None, granularity='minute'):
     attrs = dict(request.GET.items())
-    q = monsieur.q(tag, attrs).granularity(granularity)
+    q = monsieur.Q.events(name).filter(attrs).granularity(granularity)
     return JsonResponse(q.eval())
 
+def attrs(request, name):
+    attrs = dict(request.GET.items())
+    q = monsieur.Q.events(name).filter(attrs)
+    return JsonResponse(q.attrs())
+
+def names(request, tag):
+    q = monsieur.Q.tag(tag)
+    return JsonResponse(q.names())
 
 class JsonResponse(HttpResponse):
     def __init__(self, obj, status=200):

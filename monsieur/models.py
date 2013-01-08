@@ -25,5 +25,9 @@ class DataAttribute(models.Model):
     def make(cls, key, value):
         return '%s=%s' % (key, value)
 
+    @classmethod
+    def split(cls, id):
+        return id.split('=')
+
     def __unicode__(self):
         return self.id

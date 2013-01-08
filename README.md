@@ -1,4 +1,4 @@
-django-monsieur
+## django-monsieur
 ========
 
 monsieur is a Django app designed to track/monitor/query arbitrary
@@ -33,5 +33,5 @@ monsieur has a query system similar to Django's querysets.
 >>> q = q.filter(os='windows')
 >>> q = q.granularity('hour')
 >>> q.eval()
-{'integer division or modulo by zero': [{'dt': datetime.datetime(2013, 1, 7, 20, 46, 0, 0), 'count': 1}, ...]}
+{'integer division or modulo by zero': [{'dt': datetime.datetime(2013, 1, 7, 20, 0, 0, 0), 'count': 1}, ...]}
 ```

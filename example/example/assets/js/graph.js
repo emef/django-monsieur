@@ -35,6 +35,7 @@ define(function() {
             self.max_count = 0;
             self.min_date = null;
             self.max_date = null;
+            self.vis.selectAll('path').remove();
         };
 
         this.draw = function(plot) {
@@ -47,7 +48,7 @@ define(function() {
             var x = d3.time.scale().domain([self.min_date, self.max_date]).range([0, self.w]),
             y = d3.scale.linear().domain([0, self.max_count]).range([0, self.h]);
 
-            self.vis.selectAll('path').remove()
+            self.vis.selectAll('path').remove();
             self.plots.push(plot);
             self.plots.forEach(function(plot, i) {
                 self.vis.append('svg:path')

@@ -15,9 +15,11 @@ def incr(name, amt, tag_names, *args, **kwargs):
         attr, created = DataAttribute.objects.get_or_create(key=key, value=val, id=id)
         data_attrs.append(attr)
 
-    tags = []
-    for name in tag_names:
-        tags.append(Tag.objects.get_or_create(name=name))
+    def get_tag(name):
+        tag, _ = Tag.objects.get_or_create(name=name)
+        return tag
+
+    tags = [get_tage(name) for name in tag_names]
 
     dp = DataPoint.objects.create(
         name=name,
@@ -39,7 +41,7 @@ class Q(object):
         return Q(qs)
 
     @classmethod
-    def points(cls, names):
+    def events(cls, names):
         names = names if isinstance(names, list) else [names, ]
         qs = DataPoint.objects.filter(name__in=names)
         return Q(qs)
@@ -81,6 +83,16 @@ class Q(object):
     def names(self):
         return [x['name'] for x in self.qs.values('name').annotate()]
 
+    def attrs(self):
+        xs = DataAttribute.objects.filter(points__in=self.qs).values('id').annotate()
+        values = defaultdict(lambda: [])
+
+        for row in xs:
+            key, val = DataAttribute.split(row['id'])
+            values[key].append(val)
+
+        return dict(values)
+
     def eval(self):
         if not self.cached_results:
             raw_data = list(self.qs.values('name', 'dt').annotate(count=Sum('count')))
@@ -94,20 +106,6 @@ class Q(object):
             self.cached_results = data
 
         return self.cached_results
-
-def all(start=None, end=None):
-    qs = DataPoint.objects.all()
-    if start is not None:
-        qs = qs.filter(dt__gte=start)
-    if end is not None:
-        qs = qs.filter(dt__lte=end)
-
-    pts = list(qs.values('dt', 'name').annotate(count=Sum('count')))
-    data = defaultdict(lambda: [])
-    for pt in pts:
-        data[pt['name']].append({'dt': pt['dt'], 'count': pt['count']})
-
-    return data
 
 def grouped(data, granularity):
     rplc_args = {}

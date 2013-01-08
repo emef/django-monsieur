@@ -1,0 +1,39 @@
+path {
+    stroke-width: 2;
+    fill: none;
+}
+
+line {
+    stroke: black;
+}
+
+text {
+    font-family: Arial;
+    font-size: 9pt;
+}
+
+.label {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    max-width: 100px;
+    cursor: pointer;
+    height: 1.2em;
+}
+
+.label span {
+    display: inline-block;
+    height: 0.8em;
+    width: 0.8em;
+    margin: 0.15em 10px 0px 5px;
+    border: 1px solid #444;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background: orange;
+}
+
+.label.disabled span {
+    background: white;
+}
