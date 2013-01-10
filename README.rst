@@ -13,6 +13,7 @@ Once installed (instructions below), simply import monsieur and start
 logging events.
 
 ::
+
   # views.py
   import monsieur
 
@@ -26,9 +27,8 @@ logging events.
           monsieur.incr(name, 1, 'view errors', os=os, browser=browser)
 
 
-monsieur has a query system similar to Django's querysets.
+monsieur has a query system similar to Django's querysets::
 
-::
   >>> import monsieur
   >>> q = monsieur.Q.tag('view errors')
   >>> q = q.filter(os='windows')
@@ -41,33 +41,35 @@ monsieur has a query system similar to Django's querysets.
 Q constructors
 --------------------
 
-``Q.tag(x)        # x = TAG | [TAG1, TAG2, ...]``
+::
+  
+  Q.tag(x)        # x = TAG | [TAG1, TAG2, ...]
 
-``Q.events(x)     # x = NAME | [NAME1, NAME2, ...]``
+  Q.events(x)     # x = NAME | [NAME1, NAME2, ...]
 
 
-### Q methods
-```python
-q.filter(**kwargs)   # key=value to filter by
+--------------------
+Q methods
+--------------------
 
-q.start(x)           # x = datetime.datetime
+::
 
-q.end(x)             # x = datetime.datetime
+  q.filter(**kwargs)   # key=value to filter by
+  
+  q.start(x)           # x = datetime.datetime 
+  
+  q.end(x)             # x = datetime.datetime
+  
+  q.granularity(x)     # x = 'minute' | 'hour' | 'day'
 
-q.granularity(x)     # x = 'minute' | 'hour' | 'day'
-```
 
-### Q evaluation methods
-```python
-q.names()
+--------------------
+Q evaluation methods
+--------------------
 
-q.eval()
-```
+::
 
-## Ideas
-Three columns:
-* left: events (one row per event)
-* middle: keys (one row per key; displayed when an event is 'explored')
-* right: values (one row per value; displayed when an attribute is 'explored')
+  q.names()
 
-Clear button for mid/right columns
+  q.eval()
+
