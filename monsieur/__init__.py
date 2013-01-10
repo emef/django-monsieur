@@ -1,3 +1,11 @@
+__all__ = ('VERSION',)
+
+try:
+    VERSION = __import__('pkg_resources') \
+        .get_distribution('django-debug-toolbar').version
+except Exception, e:
+    VERSION = 'unknown'
+
 import datetime, itertools
 from django.db import transaction
 from django.db.models import Sum, Q
@@ -19,7 +27,10 @@ def incr(name, amt, tag_names, *args, **kwargs):
         tag, _ = Tag.objects.get_or_create(name=name)
         return tag
 
-    tags = [get_tage(name) for name in tag_names]
+    if isinstance(tag_names, str):
+        tags = [get_tag(tag_names),]
+    else:
+        tags = [get_tag(name) for name in tag_names]
 
     dp = DataPoint.objects.create(
         name=name,
@@ -58,7 +69,7 @@ class Q(object):
         for key, val in attrs.items():
             if val == '*':
                 self.qs = self.qs.filter(attributes__key=key)
-                q_or = Q(key=key)
+                q_or = self.qs.filter(attributes__key=key)
             else:
                 val = val.replace('\\*', '*')
                 self.qs = self.qs.filter(attributes__pk=DataAttribute.make(key, val))

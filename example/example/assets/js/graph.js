@@ -21,8 +21,6 @@ define(function() {
         this.max_date = null,
         this.max_count = 0;
 
-        this.colors = ['steelblue', '#8B7355', '#2E8B57'];
-
         this.vis = d3.select('body')
             .append('div')
             .append('svg:svg')
@@ -38,7 +36,7 @@ define(function() {
             self.vis.selectAll('path').remove();
         };
 
-        this.draw = function(plot) {
+        this.draw = function(plot, color) {
             plot.forEach(function(pt) {
                 self.max_count = max(self.max_count, pt.count);
                 self.min_date = min(self.min_date, pt.dt);
@@ -49,16 +47,16 @@ define(function() {
             y = d3.scale.linear().domain([0, self.max_count]).range([0, self.h]);
 
             self.vis.selectAll('path').remove();
-            self.plots.push(plot);
-            self.plots.forEach(function(plot, i) {
+            self.plots.push([plot, color]);
+            self.plots.forEach(function(args, i) {
                 self.vis.append('svg:path')
                     .attr('class', 'line')
-                    .attr('stroke', self.colors[i%self.colors.length])
+                    .attr('stroke', args[1])
                     .attr('d', (d3.svg.line()
                                 .x(function(d) { return x(d.dt) })
                                 .y(function(d) { return self.h - y(d.count) })
                                 .interpolate('basis')
-                               )(plot)
+                               )(args[0])
                          );
             });
         };

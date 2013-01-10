@@ -1,0 +1,9 @@
+News for django-monsieur
+=============================
+
+0.0.1 (2013 Jan 10)
+--------------------
+
+* Getting project submitted to pypi
+* Added AUTHORS, LICENCSE, etc.
+* Project structure modeled after django-debug-toolbar

@@ -6,6 +6,8 @@ define(function() {
         this._plots = {};
         this._attrs = {};
 
+        this.container = document.getElementsByTagName('body')[0];
+
         var makeqs = function(attrs) {
             var s = '';
             if (attrs) {

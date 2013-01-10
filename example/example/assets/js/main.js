@@ -1,71 +1,150 @@
-require(['controls', 'util'], function(controls, util) {
-    var $ = (function() {
-        var scratch = document.createElement('div');
-        return function (html_str) {
-            var rv;
-            scratch.innerHTML = html_str;
-            rv = scratch.childNodes[0];
-            scratch.removeChild(rv);
-            return rv;
-        }
-    }());
+require([
+    'controls',
+    'util',
+    'label',
+    'html'
+], function(
+    controls,
+    util,
+    label,
+    $
+) {
+    var TAG = 'example';
 
-    var set_class = function(elem, classname, enabled) {
-        var classes = elem.className.split(/\s+/),
-            ix = classes.indexOf(classname);
+    /* goal:
 
-        if (enabled && ix === -1) {
-            classes.push(classname);
-        } else if (!enabled && ix !== -1) {
-            classes.splice(ix, 1);
-        } else {
-            return;
-        }
+       plot:
+           1. # offers/hour for each site
+           2. # offers/hour total
+    */
 
-        elem.className = classes.join(' ');
+    var event_name = 'offer';
 
-    };
+    util.attrs(event_name, {}, function(attrs) {
+        var ids = [],
+            options = attrs.site;
 
-    var bind = function(elem, event, fn) {
-        if (elem.addEventListener) {
-            elem.addEventListener(event, fn, false);
-        }
-        else if (elem.attachEvent) {
-            elem.attachEvent('on'+event, (function(e) {
-                return function() {
-                    fn.call(e);
-                }
-            })(elm)) ;
-        }
-    };
+        ids.push(controls.register(event_name, {site: '*'}))
 
-    var id = function (x) {
-        return document.getElementById(x);
-    }
-
-    var mklabel = function(name) {
-        var d = $('<div class="label" />'),
-            visible = true;
-
-        d.appendChild($('<div><span></span>' + name + '</div>'));
-        bind(d, 'click', function() {
-            visible = !visible;
-            controls.visible(name, visible);
-            set_class(d, 'disabled', !visible);
+        options.forEach(function(site) {
+            ids.push(controls.register(event_name, {site: site}));
         });
 
-        return d;
-    }
-
-    util.names('example', function(names) {
-        var d = $('<div />');
-        names.forEach(function(name) {
-            d.appendChild(mklabel(name));
-        });
-        document.getElementsByTagName('body')[0].appendChild(d);
+        controls.push_context(ids);
     });
+
+
+
+
+
+
+/*
+
+
+
+
+    var make_vals_column = function(event_id, key, vals) {
+        var event_name = controls.mapped(event_id).name;
+
+        util.attrs(event_name, {}, function(attrs) {
+            console.log('key =', key, 'vals =', vals);
+        });
+    };
+
+    var add_keys_column = function(event_id) {
+        var event_name = controls.mapped(event_id).name;
+
+        util.attrs(event_name, {}, function(attrs) {
+            for (var key in attrs) {
+                if (attrs.hasOwnProperty(key)) {
+                    var cb2 = function(toggled) {
+
+                    };
+
+                    make_vals_column(event_id, key, attrs[key]);
+                }
+            }
+        });
+    };
+
+    var add_events_column = function(names) {
+        var ids = [],
+            column = $('<div class="column" />');
+
+        names.forEach(function(name) {
+            ids.push(controls.register(name, {}));
+        });
+
+        ids.forEach(function(id) {
+            var event_name = controls.mapped(id).name;
+
+            var cb1 = function(toggled) {
+                controls.toggle(id, toggled);
+            };
+
+            var cb2 = function(toggled) {
+                if (!toggled) {
+                    controls.unwind();
+                } else {
+                    add_keys_column(id);
+                    controls.only(id);
+                }
+            };
+
+            column.appendChild(label.make(event_name, cb1, cb2));
+        });
+
+        controls.push_context(ids);
+        util.container.appendChild(column);
+
+    };
+
+    var make_column = function(ids, cb_gen) {
+        var column = $('<div class="column" />');
+
+        ids.forEach(function(id) {
+            var name = controls.mapped(id).name;
+
+            var cb1 = function(toggled) {
+                controls.toggle(id, toggled);
+            };
+
+            var cb2 = cb_gen(id);
+
+            column.appendChild(label.make(name, cb1, cb2));
+        });
+
+        return column;
+    };
+
+    util.names(TAG, add_events_column);
+*/
+
+/*
+        var cb_gen = function(id) {
+            return function(toggled) {
+                var obj = controls.mapped(id);
+                util.attrs(obj.name, obj.attrs, function(attrs) {
+                    var ids = [];
+                    for (var key in attrs) {
+                        if (attrs.hasOwnProperty(key)) {
+                            var x = {};
+                            x[key] = attrs[key];
+                            ids.push(controls.register(key, x));
+                        }
+                    }
+
+                    var column = make_column(ids, function() {});
+                    util.container.appendChild(column);
+                    controls.push_context(ids);
+                });
+            };
+        };
+*/
+
 
     window.controls = controls;
     window.util = util;
-    controls.init('example');
+    window.label = label;
+    window.$ = $;
 });

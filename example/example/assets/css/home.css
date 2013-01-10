@@ -22,7 +22,7 @@ text {
     height: 1.2em;
 }
 
-.label span {
+.label div.toggle {
     display: inline-block;
     height: 0.8em;
     width: 0.8em;
@@ -34,6 +34,10 @@ text {
     background: orange;
 }
 
-.label.disabled span {
+.label.disabled div.toggle {
     background: white;
+}
+
+.column {
+    float: left;
 }

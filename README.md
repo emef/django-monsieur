@@ -60,3 +60,11 @@ q.names()
 
 q.eval()
 ```
+
+## Ideas
+Three columns:
+* left: events (one row per event)
+* middle: keys (one row per key; displayed when an event is 'explored')
+* right: values (one row per value; displayed when an attribute is 'explored')
+
+Clear button for mid/right columns
