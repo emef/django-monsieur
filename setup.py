@@ -12,7 +12,7 @@ setup(
     license='BSD',
     packages=find_packages(exclude=('tests', 'example',)),
     tests_require=[
-        'django>=1.3,<1.5',
+        'django>=1.3,<2.3',
     ],
     test_suite='runtests.runtests',
     classifiers=[
